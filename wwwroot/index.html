@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Защитные сооружения ГО</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">ГО</div><div><div class="brand-title">Защитные сооружения</div><div class="brand-subtitle">Учёт объектов ГО</div></div></div>
+    <nav class="nav flex-column gap-1">
+      <button class="nav-link active" data-page="dashboard">Сводка</button>
+      <button class="nav-link" data-page="structures">Сооружения</button>
+      <button class="nav-link" data-page="employees">Сотрудники</button>
+      <button class="nav-link" data-page="inspections">Проверки</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div><h1 id="pageTitle" class="h3 mb-1">Сводка</h1><p id="pageSubtitle" class="text-secondary mb-0">Состояние защитных сооружений и распределения персонала</p></div>
+      <button id="refreshButton" class="btn btn-outline-secondary btn-sm">Обновить</button>
+    </header>
+
+    <section id="page-dashboard" class="page active">
+      <div id="metrics" class="row g-3 mb-4"></div>
+      <div class="row g-3">
+        <div class="col-xl-6"><div class="panel h-100"><div class="panel-header"><h2 class="h5 mb-0">Состояние сооружений</h2></div><div id="conditionSummary" class="status-list"></div></div></div>
+        <div class="col-xl-6"><div class="panel h-100"><div class="panel-header"><h2 class="h5 mb-0">Распределение и проверки</h2></div><div id="distributionSummary" class="status-list"></div></div></div>
+      </div>
+    </section>
+
+    <section id="page-structures" class="page">
+      <div class="panel">
+        <div class="panel-header d-flex justify-content-between align-items-center gap-3">
+          <div><h2 class="h5 mb-1">Защитные сооружения</h2><div class="text-secondary small">Вместимость, состояние и ответственные лица</div></div>
+          <button class="btn btn-primary" data-action="create-structure">Добавить сооружение</button>
+        </div>
+        <div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Рег. №</th><th>Название</th><th>Тип</th><th>Вместимость</th><th>Занято</th><th>Свободно</th><th>Состояние</th><th></th></tr></thead>
+          <tbody id="structuresTable"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section id="page-employees" class="page">
+      <div class="panel">
+        <div class="panel-header d-flex justify-content-between align-items-center gap-3">
+          <div><h2 class="h5 mb-1">Сотрудники</h2><div class="text-secondary small">Распределение сотрудников по защитным сооружениям</div></div>
+          <button class="btn btn-primary" data-action="create-employee">Добавить сотрудника</button>
+        </div>
+        <div class="filter-bar">
+          <select id="employeeStructureFilter" class="form-select form-select-sm"><option value="">Все сооружения</option></select>
+          <select id="employeeAssignmentFilter" class="form-select form-select-sm"><option value="">Все сотрудники</option><option value="assigned">Распределены</option><option value="unassigned">Не распределены</option></select>
+        </div>
+        <div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Табельный №</th><th>ФИО</th><th>Отдел</th><th>Должность</th><th>Сооружение</th><th></th></tr></thead>
+          <tbody id="employeesTable"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section id="page-inspections" class="page">
+      <div class="panel">
+        <div class="panel-header d-flex justify-content-between align-items-center gap-3">
+          <div><h2 class="h5 mb-1">Проверки</h2><div class="text-secondary small">История проверок и контроль состояния</div></div>
+          <button class="btn btn-primary" data-action="create-inspection">Добавить проверку</button>
+        </div>
+        <div class="filter-bar"><select id="inspectionStructureFilter" class="form-select form-select-sm"><option value="">Все сооружения</option></select></div>
+        <div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Дата</th><th>Сооружение</th><th>Проверяющий</th><th>Результат</th><th>Следующая проверка</th><th>Замечания</th></tr></thead>
+          <tbody id="inspectionsTable"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+  <form id="entityForm"><div class="modal-header"><h2 id="modalTitle" class="modal-title fs-5"></h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div id="modalBody" class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-primary">Сохранить</button></div></form>
+</div></div></div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><h2 id="detailsModalTitle" class="modal-title fs-5">Карточка сооружения</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div id="detailsModalBody" class="modal-body"></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button></div>
+</div></div></div>
+
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
