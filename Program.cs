@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Gochs.ProtectiveStructures.Data;
+using Gochs.ProtectiveStructures.Data.Seed;
 using Gochs.ProtectiveStructures.Exceptions;
 using Gochs.ProtectiveStructures.Repositories.Implementations;
 using Gochs.ProtectiveStructures.Repositories.Interfaces;
@@ -31,6 +32,15 @@ builder.Services.AddScoped<IInspectionService, InspectionService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    await context.Database.MigrateAsync();
+    await DatabaseSeeder.SeedAsync(context);
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
