@@ -11,7 +11,7 @@ public class ProtectiveStructureConfiguration : IEntityTypeConfiguration<Protect
         builder.ToTable("ProtectiveStructures",
             table => table.HasCheckConstraint(
                 "CK_ProtectiveStructures_Capacity_Positive",
-                ""Capacity" > 0"));
+                "\"Capacity\" > 0"));
 
         builder.HasKey(x => x.Id);
 
