@@ -24,18 +24,35 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Unhandled exception");
+            var statusCode = exception switch
+            {
+                ValidationException => StatusCodes.Status400BadRequest,
+                NotFoundException => StatusCodes.Status404NotFound,
+                BusinessRuleException => StatusCodes.Status409Conflict,
+                _ => StatusCodes.Status500InternalServerError
+            };
 
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            if (statusCode == StatusCodes.Status500InternalServerError)
+                logger.LogError(exception, "Unhandled exception");
+            else
+                logger.LogWarning(exception, "Request failed with status code {StatusCode}", statusCode);
+
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
 
             await context.Response.WriteAsJsonAsync(new
             {
-                status = StatusCodes.Status500InternalServerError,
-                title = "Произошла внутренняя ошибка.",
-                detail = environment.IsDevelopment()
-                    ? exception.Message
-                    : "Внутренняя ошибка сервера"
+                status = statusCode,
+                title = statusCode switch
+                {
+                    StatusCodes.Status400BadRequest => "Ошибка валидации.",
+                    StatusCodes.Status404NotFound => "Ресурс не найден.",
+                    StatusCodes.Status409Conflict => "Нарушено бизнес-правило.",
+                    _ => "Произошла внутренняя ошибка."
+                },
+                detail = statusCode == StatusCodes.Status500InternalServerError && !environment.IsDevelopment()
+                    ? "Внутренняя ошибка сервера"
+                    : exception.Message
             });
         }
     }
