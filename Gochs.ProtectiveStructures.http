@@ -1,0 +1,4 @@
+@Gochs_ProtectiveStructures_HostAddress = http://localhost:5219
+
+GET {{Gochs_ProtectiveStructures_HostAddress}}/api/dashboard
+Accept: application/json
